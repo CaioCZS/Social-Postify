@@ -10,8 +10,8 @@ export async function createPublication(prisma: PrismaService) {
   return prisma.publications.create({
     data: {
       date: faker.date.future({ years: 1 }),
-      mediasId: media.id,
-      postsId: post.id,
+      mediaId: media.id,
+      postId: post.id,
     },
   });
 }

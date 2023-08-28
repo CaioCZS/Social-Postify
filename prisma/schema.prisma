@@ -30,12 +30,12 @@ model Posts {
 }
 
 model Publications {
-  id       Int      @id @default(autoincrement())
-  mediaId  Medias   @relation(fields: [mediasId], references: [id])
-  mediasId Int
-  postId   Posts    @relation(fields: [postsId], references: [id])
-  postsId  Int
-  date     DateTime
+  id      Int      @id @default(autoincrement())
+  Media   Medias   @relation(fields: [mediaId], references: [id])
+  mediaId Int
+  Post    Posts    @relation(fields: [postId], references: [id])
+  postId  Int
+  date    DateTime
 
   @@map("publications")
 }
