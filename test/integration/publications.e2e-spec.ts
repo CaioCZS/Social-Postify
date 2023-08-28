@@ -36,7 +36,38 @@ describe('Publications', () => {
 
   const baseRoute = '/publications';
 
-  describe('POST /', () => {});
+  describe('POST /', () => {
+    it('should respond with status code 400 if body is invalid', async () => {
+      const { statusCode } = await server.post(baseRoute).send({});
+      expect(statusCode).toBe(HttpStatus.BAD_REQUEST);
+    });
+
+    it('should respond with status code 404 if mediaId dosent exist', async () => {
+      const post = await createPostWithImage(prisma);
+      const { statusCode } = await server
+        .post(baseRoute)
+        .send({ mediaId: 1, postId: post.id, date: new Date() });
+      expect(statusCode).toBe(HttpStatus.NOT_FOUND);
+    });
+    it('should respond with status code 404 if postId dosent exist', async () => {
+      const media = await createMedia(prisma);
+      const { statusCode } = await server
+        .post(baseRoute)
+        .send({ mediaId: media.id, postId: 1, date: new Date() });
+      expect(statusCode).toBe(HttpStatus.NOT_FOUND);
+    });
+    it('should create a new publication in db', async () => {
+      const media = await createMedia(prisma);
+      const post = await createPostWithImage(prisma);
+      const { statusCode } = await server
+        .post(baseRoute)
+        .send({ mediaId: media.id, postId: post.id, date: new Date() });
+      expect(statusCode).toBe(HttpStatus.CREATED);
+
+      const publication = await prisma.publications.findFirst();
+      expect(publication).not.toBe(null);
+    });
+  });
 
   describe('GET /', () => {});
 
@@ -60,11 +91,40 @@ describe('Publications', () => {
       );
 
       expect(statusCode).toBe(HttpStatus.OK);
-      expect(body).toEqual(publication);
+      expect(body).toEqual({
+        ...publication,
+        date: publication.date.toISOString(),
+      });
     });
   });
 
   describe('PUT /:id', () => {});
 
-  describe('DELETE /:id', () => {});
+  describe('DELETE /:id', () => {
+    it('should respond with status code 400 if id is invalid', async () => {
+      const { statusCode } = await server.delete(`${baseRoute}/invalidId`);
+
+      expect(statusCode).toBe(HttpStatus.BAD_REQUEST);
+    });
+
+    it('should respond with status code 404 if id dosent exist', async () => {
+      const { statusCode } = await server.delete(`${baseRoute}/1`);
+
+      expect(statusCode).toBe(HttpStatus.NOT_FOUND);
+    });
+
+    it('should delete the publication in db', async () => {
+      const publication = await createPublication(prisma);
+      const { statusCode } = await server.delete(
+        `${baseRoute}/${publication.id}`,
+      );
+
+      expect(statusCode).toBe(HttpStatus.OK);
+
+      const isDeleted = await prisma.publications.findUnique({
+        where: { id: publication.id },
+      });
+      expect(isDeleted).toBe(null);
+    });
+  });
 });
