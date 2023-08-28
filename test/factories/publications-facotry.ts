@@ -1,11 +1,11 @@
 import { faker } from '@faker-js/faker';
 import { PrismaService } from '../../src/prisma/prisma.service';
 import { createMedia } from './medias-factory';
-import { createPost } from './posts-factory';
+import { createPostWithImage } from './posts-factory';
 
 export async function createPublication(prisma: PrismaService) {
   const media = await createMedia(prisma);
-  const post = await createPost(prisma);
+  const post = await createPostWithImage(prisma);
 
   return prisma.publications.create({
     data: {
