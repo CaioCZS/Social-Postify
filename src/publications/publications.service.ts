@@ -2,26 +2,60 @@
 import { Injectable } from '@nestjs/common';
 import { CreatePublicationDto } from './dto/create-publication.dto';
 import { UpdatePublicationDto } from './dto/update-publication.dto';
+import { PublicationsRepository } from './publications.repository';
+import { PostsService } from '../posts/posts.service';
+import { MediasService } from '../medias/medias.service';
+import {
+  PublicationAlreadyPublished,
+  PublicationNotFound,
+} from '../errors/publication-erros';
 
 @Injectable()
 export class PublicationsService {
-  create(createPublicationDto: CreatePublicationDto) {
-    return 'This action adds a new publication';
+  constructor(
+    private readonly publicationRepository: PublicationsRepository,
+    private readonly postsService: PostsService,
+    private readonly mediasService: MediasService,
+  ) {}
+
+  async create(createPublicationDto: CreatePublicationDto) {
+    await this.verifyExistingMediaAndPost(createPublicationDto);
+
+    await this.publicationRepository.create(createPublicationDto);
   }
 
-  findAll() {
-    return `This action returns all publications`;
+  async findAll(published: string | null, after: string | null) {
+    return await this.publicationRepository.findAll(published, after);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} publication`;
+  async findOne(id: number) {
+    const publication = await this.publicationRepository.findOne(id);
+    if (!publication) throw new PublicationNotFound();
+    return publication;
   }
 
-  update(id: number, updatePublicationDto: UpdatePublicationDto) {
-    return `This action updates a #${id} publication`;
+  async update(id: number, updatePublicationDto: UpdatePublicationDto) {
+    const publication = await this.findOne(id);
+    await this.verifyExistingMediaAndPost(updatePublicationDto);
+    await this.verifyIfPublicationIsNotPublished(publication.date);
+
+    return this.publicationRepository.update(id, updatePublicationDto);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} publication`;
+  async remove(id: number) {
+    const publication = await this.findOne(id);
+    return await this.publicationRepository.remove(id);
+  }
+
+  private async verifyExistingMediaAndPost(ids: UpdatePublicationDto) {
+    const { mediaId, postId } = ids;
+    await this.mediasService.findOne(mediaId);
+    await this.postsService.findOne(postId);
+  }
+
+  private async verifyIfPublicationIsNotPublished(date: Date) {
+    const currentDate = new Date();
+    const publicationDate = new Date(date);
+    if (currentDate > publicationDate) throw new PublicationAlreadyPublished();
   }
 }

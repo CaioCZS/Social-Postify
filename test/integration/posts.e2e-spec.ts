@@ -1,10 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Test, TestingModule } from '@nestjs/testing';
 import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../../src/app.module';
 import { PrismaService } from '../../src/prisma/prisma.service';
-import { createMedia } from '../factories/medias-factory';
 import { faker } from '@faker-js/faker';
 import { createPublication } from '../factories/publications-facotry';
 import { cleanDb } from '../helpers';

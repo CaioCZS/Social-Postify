@@ -15,7 +15,7 @@ export class PostsService {
   ) {}
 
   async create(createPostDto: CreatePostDto) {
-    const posts = await this.postsRepository.create(createPostDto);
+    await this.postsRepository.create(createPostDto);
   }
 
   async findAll() {

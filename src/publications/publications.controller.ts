@@ -1,34 +1,57 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Query,
+  ParseIntPipe,
+  Put,
+} from '@nestjs/common';
 import { PublicationsService } from './publications.service';
 import { CreatePublicationDto } from './dto/create-publication.dto';
 import { UpdatePublicationDto } from './dto/update-publication.dto';
+import { isIdGreaterThanZero } from '../helpers';
 
 @Controller('publications')
 export class PublicationsController {
   constructor(private readonly publicationsService: PublicationsService) {}
 
   @Post()
-  create(@Body() createPublicationDto: CreatePublicationDto) {
-    return this.publicationsService.create(createPublicationDto);
+  async create(@Body() createPublicationDto: CreatePublicationDto) {
+    await this.publicationsService.create(createPublicationDto);
+    return 'Publication Created';
   }
 
   @Get()
-  findAll() {
-    return this.publicationsService.findAll();
+  async findAll(
+    @Query('published') published: string | null,
+    @Query('after') after: string | null,
+  ) {
+    return await this.publicationsService.findAll(published, after);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.publicationsService.findOne(+id);
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    isIdGreaterThanZero(id);
+    return this.publicationsService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePublicationDto: UpdatePublicationDto) {
-    return this.publicationsService.update(+id, updatePublicationDto);
+  @Put(':id')
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updatePublicationDto: UpdatePublicationDto,
+  ) {
+    isIdGreaterThanZero(id);
+    await this.publicationsService.update(id, updatePublicationDto);
+    return 'Publication updated';
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.publicationsService.remove(+id);
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    isIdGreaterThanZero(id);
+    await this.publicationsService.remove(id);
+    return 'Publication deleted';
   }
 }

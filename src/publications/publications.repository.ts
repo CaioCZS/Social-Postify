@@ -9,11 +9,26 @@ export class PublicationsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   create(createPublicationDto: CreatePublicationDto) {
-    return 'This action adds a new publication';
+    const { date, mediaId, postId } = createPublicationDto;
+    return this.prisma.publications.create({ data: { date, mediaId, postId } });
   }
 
-  findAll() {
-    return `This action returns all publications`;
+  async findAll(published: string | null, after: string | null) {
+    const currentDate = new Date();
+
+    return await this.prisma.publications.findMany({
+      where: {
+        date: {
+          lt: published === 'true' ? currentDate : undefined,
+          gte:
+            published === 'false'
+              ? currentDate
+              : after
+              ? new Date(after)
+              : undefined,
+        },
+      },
+    });
   }
 
   findByPostId(postId: number) {
@@ -32,14 +47,17 @@ export class PublicationsRepository {
     });
   }
   findOne(id: number) {
-    return `This action returns a #${id} publication`;
+    return this.prisma.publications.findUnique({ where: { id } });
   }
 
   update(id: number, updatePublicationDto: UpdatePublicationDto) {
-    return `This action updates a #${id} publication`;
+    return this.prisma.publications.update({
+      where: { id },
+      data: updatePublicationDto,
+    });
   }
 
   remove(id: number) {
-    return `This action removes a #${id} publication`;
+    return this.prisma.publications.delete({ where: { id } });
   }
 }

@@ -11,6 +11,7 @@ import {
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
+import { isIdGreaterThanZero } from '../helpers';
 
 @Controller('posts')
 export class PostsController {
@@ -29,6 +30,7 @@ export class PostsController {
 
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
+    isIdGreaterThanZero(id);
     return await this.postsService.findOne(id);
   }
 
@@ -37,12 +39,14 @@ export class PostsController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updatePostDto: UpdatePostDto,
   ) {
+    isIdGreaterThanZero(id);
     await this.postsService.update(id, updatePostDto);
     return 'Post updated';
   }
 
   @Delete(':id')
   async remove(@Param('id', ParseIntPipe) id: number) {
+    isIdGreaterThanZero(id);
     await this.postsService.remove(id);
     return 'Post deleted';
   }
